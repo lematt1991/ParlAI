@@ -13,7 +13,7 @@ from functools import lru_cache
 def opt_to_kwargs(opt):
     """Get kwargs for seq2seq from opt."""
     kwargs = {}
-    for k in ['mem_size', 'time_features', 'position_encoding', 'hops']:
+    for k in ['memsize', 'time_features', 'position_encoding', 'hops']:
         if k in opt:
             kwargs[k] = opt[k]
     return kwargs
@@ -24,7 +24,7 @@ class MemNN(nn.Module):
 
     def __init__(
         self, num_features, embedding_size, hops=1,
-        mem_size=32, time_features=False, position_encoding=False,
+        memsize=32, time_features=False, position_encoding=False,
         dropout=0, padding_idx=0,
     ):
         """Initialize memnn model.
@@ -35,13 +35,15 @@ class MemNN(nn.Module):
 
         # prepare features
         self.hops = hops
+        self.save_hop_states = False
+        self.hop_states = []
 
         # time features: we learn an embedding for each memory slot
         self.extra_features = 0
         if time_features:
-            self.extra_features += mem_size
+            self.extra_features += memsize
             self.time_features = torch.LongTensor(
-                range(num_features, num_features + mem_size))
+                range(num_features, num_features + memsize))
 
         def embedding(use_extra_feats=True):
             if use_extra_feats:
@@ -88,6 +90,7 @@ class MemNN(nn.Module):
                 otherwise, these scores are over the candidates provided.
                 (bsz x num_cands)
         """
+        self.hop_states = []
         state = self.query_lt(xs)
         if mems is not None:
             # no memories available, `nomemnn` mode just uses query/ans embs
@@ -95,7 +98,9 @@ class MemNN(nn.Module):
             out_memory_embs = self.out_memory_lt(mems)
 
             for _ in range(self.hops):
-                state = self.memory_hop(state, in_memory_embs, out_memory_embs)
+                state, attn_probs = self.memory_hop(state, in_memory_embs, out_memory_embs)
+                if self.save_hop_states:
+                    self.hop_states.append(attn_probs.clone())
 
         if cands is not None:
             # embed candidates
@@ -217,4 +222,4 @@ class Hop(nn.Module):
         probs = self.softmax(attn)
         memory_output = torch.bmm(probs.unsqueeze(1), out_mem_embs).squeeze(1)
         output = memory_output + self.rotate(query_embs)
-        return output
+        return output, probs
