@@ -14,6 +14,7 @@ import os
 
 class SingleFileTeacher(FbDialogTeacher):
     def __init__(self, opt, shared=None):
+        opt = copy.deepcopy(opt)
         task = opt.get('task', 'tom:tom:orig:easy:noisy:qa21_train.txt').split(':')
         build(opt, task[:-1])
         opt['datafile'] = os.path.join(opt['datapath'], 'tom', '/'.join(task[2:]))
@@ -23,19 +24,23 @@ class SingleFileTeacher(FbDialogTeacher):
 
 class TomTeacher(core_agents.MultiTaskTeacher):
     def __init__(self, opt, shared=None):
-        opt = copy.deepcopy(opt)
-        task = opt.get('task', 'tom:tom:orig:easy:noisy').split(':')
-        build(opt, task)
-        base = 'tom:single_file:' + ':'.join(task[2:])
-        pth = os.path.join(opt['datapath'], 'tom', '/'.join(task[2:]))
-        if opt['datatype'].split(':')[0] == 'train':
-            opt['task'] = base + ':qa21_task_AB_train.txt'
-        elif opt['datatype'].split(':')[0] == 'valid':
-            files = glob(f'{pth}/*val_test.txt')
-            opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
-        elif opt['datatype'].split(':')[0] == 'test':
-            files = glob(f'{pth}/*test_test.txt')
-            opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
+        if shared is None:
+            opt = copy.deepcopy(opt)
+            task = opt.get('task', 'tom:tom:orig:easy:noisy').split(':')
+            build(opt, task)
+            base = 'tom:single_file:' + ':'.join(task[2:])
+            pth = os.path.join(opt['datapath'], 'tom', '/'.join(task[2:]))
+            if opt['datatype'].split(':')[0] == 'train':
+                opt['task'] = base + ':qa21_task_AB_train.txt'
+            elif opt['datatype'].split(':')[0] == 'valid':
+                files = glob(f'{pth}/*val_test.txt')
+                opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
+            elif opt['datatype'].split(':')[0] == 'test':
+                files = glob(f'{pth}/*test_test.txt')
+                opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
+            else:
+                raise ValueError('Failed to parse datatype')
+
         super().__init__(opt, shared)
 
 
