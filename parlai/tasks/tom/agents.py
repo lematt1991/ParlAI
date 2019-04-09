@@ -29,13 +29,12 @@ class TomTeacher(core_agents.MultiTaskTeacher):
         base = 'tom:single_file:' + ':'.join(task[2:])
         pth = os.path.join(opt['datapath'], 'tom', '/'.join(task[2:]))
         if opt['datatype'].split(':')[0] == 'train':
-            files = glob(f'{pth}/*train*')
-            opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
+            opt['task'] = base + ':qa21_task_AB_train.txt'
         elif opt['datatype'].split(':')[0] == 'valid':
-            files = glob(f'{pth}/*val_test*')
+            files = glob(f'{pth}/*val_test.txt')
             opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
         elif opt['datatype'].split(':')[0] == 'test':
-            files = glob(f'{pth}/*test_test*')
+            files = glob(f'{pth}/*test_test.txt')
             opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
         super().__init__(opt, shared)
 
