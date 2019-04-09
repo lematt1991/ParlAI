@@ -23,6 +23,7 @@ CONFIGS = {
     'orig:without_train_noise:hard:noisy': ['-ptn', '0.1', '-tn', 'false'],
     'orig:without_train_noise:easy:clean': ['-ptn', '0', '-easy', '-tn', 'false'],
     'orig:without_train_noise:easy:clean': ['-ptn', '0', '-easy', '-tn', 'false'],
+    'v2:with_train_noise:easy:clean': ['-ptn', '0', '-easy', '-tn', 'true', '--version', 'v2'],
 }
 
 
