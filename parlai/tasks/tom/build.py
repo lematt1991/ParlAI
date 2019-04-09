@@ -28,6 +28,7 @@ CONFIGS = {
 
 
 def build(opt, task):
+    task = task[:-1] if task[-1].endswith('.txt') else task
     base_path = os.path.join(opt['datapath'], 'tom')
     dpath = os.path.join(opt['datapath'], 'tom', '/'.join(task[2:]))
     version = 'None'
@@ -42,7 +43,6 @@ def build(opt, task):
         repo_url = 'git@github.com:lematt1991/tom-qa-dataset.git'
         if not os.path.exists(ds_repo):
             branch = 'dev'
-            # import pdb; pdb.set_trace()
             ret = call(['git', 'clone', repo_url, ds_repo])
             assert ret == 0, "Failed to clone tom-qa-dataset repo!"
             ret = call(['git', 'checkout', '-b', branch], cwd=ds_repo)
