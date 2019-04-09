@@ -40,7 +40,6 @@ class TomTeacher(core_agents.MultiTaskTeacher):
                 opt['task'] = ','.join([base + f':{os.path.basename(f)}' for f in files])
             else:
                 raise ValueError('Failed to parse datatype')
-
         super().__init__(opt, shared)
 
 
