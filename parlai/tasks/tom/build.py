@@ -51,7 +51,7 @@ def build(opt, task):
             ret = call(['python', 'create_world.py'], cwd=ds_repo)
 
         key = ':'.join(task[2:])
-        assert key in CONFIGS, "Couldn't recognize task type!"
+        assert key in CONFIGS, f"Couldn't recognize task type! {key}"
         args = ['-w', 'world_large.txt', '-n', '1000', '-o', dpath] + CONFIGS[key]
         ret = call(['python', 'generate_tasks.py'] + args, cwd=ds_repo)
 
