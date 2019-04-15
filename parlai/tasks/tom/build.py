@@ -8,7 +8,7 @@
 
 import parlai.core.build_data as build_data
 import os
-from subprocess import call
+from subprocess import check_output
 from glob import iglob
 from collections import defaultdict
 import re
@@ -43,17 +43,15 @@ def build(opt, task):
         repo_url = 'git@github.com:lematt1991/tom-qa-dataset.git'
         if not os.path.exists(ds_repo):
             branch = 'dev'
-            ret = call(['git', 'clone', repo_url, ds_repo])
-            assert ret == 0, "Failed to clone tom-qa-dataset repo!"
-            ret = call(['git', 'checkout', '-b', branch], cwd=ds_repo)
-            assert ret == 0, 'Failed to checkout branch "{branch}"'
-            call(['git', 'pull', 'origin', branch], cwd=ds_repo)
-            ret = call(['python', 'create_world.py'], cwd=ds_repo)
+            ret = check_output(['git', 'clone', repo_url, ds_repo])
+            ret = check_output(['git', 'checkout', '-b', branch], cwd=ds_repo)
+            check_output(['git', 'pull', 'origin', branch], cwd=ds_repo)
+            ret = check_output(['python', 'create_world.py'], cwd=ds_repo)
 
         key = ':'.join(task[2:])
         assert key in CONFIGS, f"Couldn't recognize task type! {key}"
         args = ['-w', 'world_large.txt', '-n', '1000', '-o', dpath] + CONFIGS[key]
-        ret = call(['python', 'generate_tasks.py'] + args, cwd=ds_repo)
+        ret = check_output(['python', 'generate_tasks.py'] + args, cwd=ds_repo)
 
         # Mark the data as built.
         build_data.mark_done(dpath, version_string=version)
